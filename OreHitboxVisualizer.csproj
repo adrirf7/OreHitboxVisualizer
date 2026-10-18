@@ -60,10 +60,48 @@
     </Reference>
   </ItemGroup>
 
+  <!--
+    Debug   (dotnet build): copia el .dll a BepInEx\scripts. ScriptEngine lo recarga solo con el juego abierto (o con F7).
+    Release (dotnet build -c Release): copia el .dll a BepInEx\plugins, como lo instala un jugador.
+    Cada modo borra la copia del otro para que el mod no se cargue dos veces. Al cambiar de modo hay que reiniciar el juego una vez.
+  -->
   <Target Name="DeployToValheim" AfterTargets="Build" Condition="'$(DeployToGame)' == 'true'">
-    <MakeDir Directories="$(BepInExDir)\plugins\OreHitboxVisualizer" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExDir)\plugins\OreHitboxVisualizer" />
-    <Message Importance="high" Text="OreHitboxVisualizer copiado a $(BepInExDir)\plugins\OreHitboxVisualizer" />
+    <PropertyGroup>
+      <ScriptsDll>$(BepInExDir)\scripts\$(TargetFileName)</ScriptsDll>
+      <ScriptsPdb>$(BepInExDir)\scripts\$(TargetName).pdb</ScriptsPdb>
+      <PluginsDll>$(BepInExDir)\plugins\OreHitboxVisualizer\$(TargetFileName)</PluginsDll>
+    </PropertyGroup>
+
+    <!-- ScriptEngine lee siempre los símbolos (ReadSymbols = true): sin el .pdb al lado del .dll no carga el mod. -->
+    <MakeDir Directories="$(BepInExDir)\scripts" Condition="'$(Configuration)' == 'Debug'" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(BepInExDir)\scripts" Condition="'$(Configuration)' == 'Debug'" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExDir)\scripts" Condition="'$(Configuration)' == 'Debug'" />
+    <Delete Files="$(PluginsDll)" Condition="'$(Configuration)' == 'Debug'" ContinueOnError="true" />
+    <Message Importance="high" Text="OreHitboxVisualizer copiado a $(BepInExDir)\scripts (recarga en caliente con ScriptEngine)" Condition="'$(Configuration)' == 'Debug'" />
+
+    <MakeDir Directories="$(BepInExDir)\plugins\OreHitboxVisualizer" Condition="'$(Configuration)' != 'Debug'" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExDir)\plugins\OreHitboxVisualizer" Condition="'$(Configuration)' != 'Debug'" />
+    <Delete Files="$(ScriptsDll);$(ScriptsPdb)" Condition="'$(Configuration)' != 'Debug'" ContinueOnError="true" />
+    <Message Importance="high" Text="OreHitboxVisualizer copiado a $(BepInExDir)\plugins\OreHitboxVisualizer" Condition="'$(Configuration)' != 'Debug'" />
+  </Target>
+
+  <!-- En Release, crea en release\ el zip para Nexus Mods y el de Thunderstore -->
+  <Target Name="PackageRelease" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PackageName>OreHitboxVisualizer</PackageName>
+      <PackageDir>$(MSBuildProjectDirectory)\obj\package</PackageDir>
+      <ReleaseDir>$(MSBuildProjectDirectory)\release</ReleaseDir>
+    </PropertyGroup>
+    <RemoveDir Directories="$(PackageDir)" />
+    <MakeDir Directories="$(ReleaseDir)" />
+
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PackageDir)\nexus\BepInEx\plugins\OreHitboxVisualizer" />
+    <ZipDirectory SourceDirectory="$(PackageDir)\nexus" DestinationFile="$(ReleaseDir)\$(PackageName)-$(Version)-nexus.zip" Overwrite="true" />
+
+    <Copy SourceFiles="$(TargetPath);thunderstore\manifest.json;thunderstore\README.md;thunderstore\icon.png" DestinationFolder="$(PackageDir)\thunderstore" />
+    <ZipDirectory SourceDirectory="$(PackageDir)\thunderstore" DestinationFile="$(ReleaseDir)\$(PackageName)-$(Version)-thunderstore.zip" Overwrite="true" />
+
+    <Message Importance="high" Text="Paquetes de Nexus y Thunderstore creados en $(ReleaseDir)" />
   </Target>
 
 </Project>

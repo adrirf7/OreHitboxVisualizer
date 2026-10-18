@@ -1,0 +1,80 @@
+[center][img]https://raw.githubusercontent.com/adrirf7/OreHitboxVisualizer/main/docs/copper_deposit.jpg[/img][/center]
+
+[center][size=4][color=#ECA830][b]See the hitbox of every piece of ore[/b][/color][/size]
+[size=3][color=#D8CFC2]Hit a copper, silver or rock deposit with your pickaxe and see which pieces are held and which ones are about to fall.
+Red when the hitbox collides with something, green when it touches nothing.[/color][/size][/center]
+
+[line]
+
+[size=5][color=#ECA830][b]The problem[/b][/color][/size]
+
+[size=3]Copper, silver and big rocks break apart piece by piece. When a piece stops touching anything it breaks off on its own and drops its ore, but the game doesn't show you which box it actually checks, so you end up mining pieces you didn't need to, or wondering why something didn't fall.[/size]
+
+[size=3][color=#ECA830][b]OreHitboxVisualizer[/b][/color] draws [b]the exact box the game uses[/b] for every piece, so you can see at a glance what is still held and what is free.[/size]
+
+[center][img]https://raw.githubusercontent.com/adrirf7/OreHitboxVisualizer/main/docs/big_rock.jpg[/img]
+[size=2][color=#A89F94][i]A big rock in the Plains: the bottom pieces rest on the ground (red), the ones above touch nothing (green)[/i][/color][/size][/center]
+
+[line]
+
+[size=5][color=#ECA830][b]Features[/b][/color][/size]
+
+[list]
+[*][size=3][color=#ECA830][b]Appears on the first hit[/b][/color] - the hitboxes show up the moment you hit a deposit with a pickaxe.[/size]
+[*][size=3][color=#FF4040][b]Red[/b][/color] - the piece's hitbox is colliding with something (ground, another rock, a building) or is buried below the terrain. Other pieces of the same deposit don't count.[/size]
+[*][size=3][color=#40FF50][b]Green[/b][/color] - the piece's hitbox is not touching anything.[/size]
+[*][size=3][color=#ECA830][b]Live[/b][/color] - the colours update while you mine.[/size]
+[*][size=3][color=#ECA830][b]Node count[/b][/color] - aim at a deposit to see how many nodes (pieces) it has, how many are colliding and how many are free.[/size]
+[*][size=3][color=#ECA830][b]Toggle key[/b][/color] - press [color=#ECA830][b]L[/b][/color] (configurable) to show or hide them. The state is remembered.[/size]
+[*][size=3][color=#ECA830][b]Exact[/b][/color] - it is the same box the game uses for its support check, not an approximation. It is aligned to the world axes, so it can look bigger than the piece.[/size]
+[*][size=3][color=#ECA830][b]Clean view[/b][/color] - only the edges, and only the ones you can actually see. Edges behind the rock or the terrain are hidden, free (green) edges also hide behind other hitboxes, and colliding (red) ones are never hidden by other hitboxes.[/size]
+[*][size=3][color=#ECA830][b]One deposit at a time[/b][/color] - hitting a different deposit removes the hitboxes of the previous one.[/size]
+[*][size=3][color=#ECA830][b]Auto clean-up[/b][/color] - a deposit's hitboxes disappear when you walk away or the deposit is gone.[/size]
+[*][size=3][color=#ECA830][b]Client-side only[/b][/color] - other players and the server don't need it.[/size]
+[/list]
+
+[center][img]https://raw.githubusercontent.com/adrirf7/OreHitboxVisualizer/main/docs/silver_vein.jpg[/img]
+[size=2][color=#A89F94][i]A silver vein in the Mountains, dug out of the snow: all 100 nodes are free[/i][/color][/size][/center]
+
+[center][img]https://raw.githubusercontent.com/adrirf7/OreHitboxVisualizer/main/docs/small_rock.jpg[/img]
+[size=2][color=#A89F94][i]A small rock in the Meadows: every piece touches the ground[/i][/color][/size][/center]
+
+[line]
+
+[size=5][color=#ECA830][b]How to use[/b][/color][/size]
+
+[size=3]1. Hit a copper, silver or rock deposit with your pickaxe.
+2. The hitboxes of its pieces appear: red = colliding, green = free.
+3. Aim at a deposit to see how many nodes it has, and how many are colliding and free.
+4. Press [color=#ECA830][b]L[/b][/color] to hide or show them.[/size]
+
+[line]
+
+[size=5][color=#ECA830][b]Configuration[/b][/color][/size]
+
+[size=3]File: [font=Courier New]BepInEx/config/OreHitboxVisualizer.adrirf7.cfg[/font][/size]
+
+[list]
+[*][size=3][color=#ECA830][b]Enabled[/b][/color] [color=#A89F94](default: true)[/color] - show the hitboxes (the toggle key changes it).[/size]
+[*][size=3][color=#ECA830][b]ToggleKey[/b][/color] [color=#A89F94](default: L)[/color] - key to show / hide the hitboxes.[/size]
+[*][size=3][color=#ECA830][b]PickaxeOnly[/b][/color] [color=#A89F94](default: true)[/color] - only show them when hitting with a pickaxe.[/size]
+[*][size=3][color=#ECA830][b]Mode[/b][/color] [color=#A89F94](default: Collision)[/color] - Collision: red = touches something outside its own deposit, or is buried below the terrain. Support: the game's exact support rule, green = the piece will break off when the next piece is mined.[/size]
+[*][size=3][color=#ECA830][b]HideDistance[/b][/color] [color=#A89F94](default: 40)[/color] - metres after which a deposit's hitboxes are removed.[/size]
+[*][size=3][color=#ECA830][b]HideAfterSeconds[/b][/color] [color=#A89F94](default: 0)[/color] - seconds after the last hit to remove them (0 = never).[/size]
+[*][size=3][color=#ECA830][b]ShowNodeCount[/b][/color] [color=#A89F94](default: true)[/color] - when you aim at a deposit, show under its name how many nodes (pieces) it has, how many are colliding and how many are free.[/size]
+[*][size=3][color=#ECA830][b]CollidingColor / FreeColor[/b][/color] [color=#A89F94](default: red / green)[/color] - colours.[/size]
+[*][size=3][color=#ECA830][b]LineThickness[/b][/color] [color=#A89F94](default: 0.03)[/color] - edge thickness in metres.[/size]
+[*][size=3][color=#ECA830][b]HideHiddenEdges[/b][/color] [color=#A89F94](default: true)[/color] - only draw the edges you can see: edges behind the rock or the terrain are hidden, and free (green) edges also hide behind other hitboxes. Colliding (red) edges are never hidden by other hitboxes. false = draw every edge through everything.[/size]
+[/list]
+
+[line]
+
+[size=5][color=#ECA830][b]Installation[/b][/color][/size]
+
+[size=3]1. Install [url=https://www.nexusmods.com/valheim/mods/4]BepInExPack Valheim[/url].
+2. Extract [font=Courier New]OreHitboxVisualizer-1.0.0-nexus.zip[/font] into your Valheim folder, so the DLL ends up in [font=Courier New]BepInEx/plugins/OreHitboxVisualizer/[/font].
+3. Done. Only you need it, it works on any server.[/size]
+
+[line]
+
+[center][size=2][color=#A89F94]Source code: [url=https://github.com/adrirf7/OreHitboxVisualizer]github.com/adrirf7/OreHitboxVisualizer[/url][/color][/size][/center]

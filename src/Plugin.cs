@@ -29,6 +29,8 @@ namespace OreHitboxVisualizer
         internal static ManualLogSource Log;
         internal static ConfigFile MainConfig;
 
+        private Harmony m_harmony;
+
         // General
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<KeyboardShortcut> ToggleKey;
@@ -36,14 +38,13 @@ namespace OreHitboxVisualizer
         internal static ConfigEntry<HitboxMode> Mode;
         internal static ConfigEntry<float> HideDistance;
         internal static ConfigEntry<float> HideAfterSeconds;
+        internal static ConfigEntry<bool> ShowNodeCount;
 
         // Aspecto
         internal static ConfigEntry<Color> CollidingColor;
         internal static ConfigEntry<Color> FreeColor;
         internal static ConfigEntry<float> LineThickness;
-        internal static ConfigEntry<bool> ShowFill;
-        internal static ConfigEntry<float> FillOpacity;
-        internal static ConfigEntry<bool> ShowThroughWalls;
+        internal static ConfigEntry<bool> HideHiddenEdges;
 
         private void Awake()
         {
@@ -57,12 +58,14 @@ namespace OreHitboxVisualizer
             PickaxeOnly = MainConfig.Bind("1 - General", "PickaxeOnly", true,
                 "true = hitboxes only appear when hitting the rock with a pickaxe; false = any weapon or tool.");
             Mode = MainConfig.Bind("1 - General", "Mode", HitboxMode.Collision,
-                "Collision = a piece is red when its hitbox touches anything outside its own deposit (ground, other rocks, buildings) and green otherwise. Other pieces of the same deposit are ignored.\n" +
+                "Collision = a piece is red when its hitbox touches anything outside its own deposit (ground, other rocks, buildings), or is buried below the terrain surface, and green otherwise. Other pieces of the same deposit are ignored.\n" +
                 "Support = a piece is red when the game considers it supported and green when it will break off on the next mined piece (exact vanilla support logic).");
             HideDistance = MainConfig.Bind("1 - General", "HideDistance", 40f,
                 "The hitboxes of a rock are removed when you move farther than this (metres). Hit it again to show them again.");
             HideAfterSeconds = MainConfig.Bind("1 - General", "HideAfterSeconds", 0f,
                 "Seconds since the last hit after which the hitboxes are removed. 0 = never (only by distance).");
+            ShowNodeCount = MainConfig.Bind("1 - General", "ShowNodeCount", true,
+                "true = when you aim at a deposit, a line under its name shows how many nodes (pieces) it has, how many are colliding and how many are free.");
 
             CollidingColor = MainConfig.Bind("2 - Appearance", "CollidingColor", new Color(1f, 0.15f, 0.15f, 1f),
                 "Colour of a piece whose hitbox is colliding with something.");
@@ -70,21 +73,18 @@ namespace OreHitboxVisualizer
                 "Colour of a piece whose hitbox is not colliding with anything.");
             LineThickness = MainConfig.Bind("2 - Appearance", "LineThickness", 0.03f,
                 "Thickness of the hitbox edges (metres).");
-            ShowFill = MainConfig.Bind("2 - Appearance", "ShowFill", true,
-                "true = also draw the hitbox faces semi-transparent.");
-            FillOpacity = MainConfig.Bind("2 - Appearance", "FillOpacity", 0.12f,
-                "Opacity (0-1) of the hitbox faces.");
-            ShowThroughWalls = MainConfig.Bind("2 - Appearance", "ShowThroughWalls", true,
-                "true = hitboxes are visible through the rock and terrain (most of them are inside the rock).");
+            HideHiddenEdges = MainConfig.Bind("2 - Appearance", "HideHiddenEdges", true,
+                "true = only the edges you can actually see are drawn: edges behind the rock or the terrain are hidden, " +
+                "and free (green) edges are also hidden behind other hitboxes. Colliding (red) edges are never hidden by other hitboxes.\n" +
+                "false = every edge is drawn through everything.");
 
             CollidingColor.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
             FreeColor.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
             LineThickness.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
-            ShowFill.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
-            FillOpacity.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
-            ShowThroughWalls.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
+            HideHiddenEdges.SettingChanged += (s, e) => HitboxManager.OnAppearanceChanged();
 
-            new Harmony(ModGuid).PatchAll();
+            m_harmony = new Harmony(ModGuid);
+            m_harmony.PatchAll();
             Log.LogInfo(ModName + " " + ModVersion + " loaded.");
         }
 
@@ -102,9 +102,12 @@ namespace OreHitboxVisualizer
             HitboxManager.Tick();
         }
 
+        // Al recargar con ScriptEngine se destruye el plugin: hay que quitar los parches y lo que se ha dibujado,
+        // o se quedarían activos junto a los de la versión nueva.
         private void OnDestroy()
         {
-            HitboxManager.ClearAll();
+            m_harmony?.UnpatchSelf();
+            HitboxManager.Shutdown();
         }
 
         /// <summary>Evita que la tecla actúe mientras se escribe en el chat, la consola o un cuadro de texto.</summary>
@@ -121,7 +124,7 @@ namespace OreHitboxVisualizer
             return !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible();
         }
 
-        private static bool IsSpanish()
+        internal static bool IsSpanish()
         {
             string lang = Localization.instance?.GetSelectedLanguage();
             return lang == "Spanish" || lang == "Spanish_LatAm";

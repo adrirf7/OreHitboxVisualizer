@@ -1,0 +1,9 @@
+{
+    "name": "OreHitboxVisualizer",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/adrirf7/OreHitboxVisualizer",
+    "description": "Hit an ore deposit with your pickaxe and see the support hitbox of every piece: red when it collides with something, green when it touches nothing. Toggle with L. Client-side only.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.2351"
+    ]
+}

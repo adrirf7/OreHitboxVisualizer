@@ -1,0 +1,1 @@
+Shows the support hitbox of every piece of an ore deposit (copper, silver, big rocks) the moment you hit it with your pickaxe: red when it collides with something, green when it touches nothing and is about to fall. Toggle with L. Uses the game's own hitbox. Client-side only.
